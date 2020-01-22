@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/displayTextView"
+            android:textColor="#000"
+            android:textSize="30sp"/>
+
+    </RelativeLayout>
+
 
     <TableLayout
         android:id="@+id/keypad"
@@ -27,6 +41,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/clear"
+                android:id="@+id/clearButton"
                 android:textSize="20sp" />
 
             <Button
@@ -36,6 +51,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/mod"
+                android:id="@+id/modButton"
                 android:textSize="20sp" />
 
             <Button
@@ -45,6 +61,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/add"
+                android:id="@+id/addButton"
                 android:textSize="20sp" />
 
             <Button
@@ -54,6 +71,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/sub"
+                android:id="@+id/subtractButton"
                 android:textSize="20sp" />
 
         </TableRow>
@@ -69,6 +87,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/one"
+                android:id="@+id/buttonOne"
                 android:textSize="20sp" />
 
             <Button
@@ -78,6 +97,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/two"
+                android:id="@+id/buttonTwo"
                 android:textSize="20sp" />
 
             <Button
@@ -87,6 +107,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/three"
+                android:id="@+id/buttonThree"
                 android:textSize="20sp" />
 
             <Button
@@ -96,6 +117,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/mul"
+                android:id="@+id/multiplyButton"
                 android:textSize="20sp" />
 
         </TableRow>
@@ -111,6 +133,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/four"
+                android:id="@+id/buttonFour"
                 android:textSize="20sp" />
 
             <Button
@@ -120,6 +143,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/five"
+                android:id="@+id/buttonFive"
                 android:textSize="20sp" />
 
             <Button
@@ -129,6 +153,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/six"
+                android:id="@+id/buttonSix"
                 android:textSize="20sp" />
 
             <Button
@@ -138,6 +163,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_border"
                 android:text="@string/div"
+                android:id="@+id/divideButton"
                 android:textSize="20sp" />
 
         </TableRow>
@@ -167,6 +193,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/button_border"
                     android:text="@string/seven"
+                    android:id="@+id/buttonSeven"
                     android:textSize="20sp" />
 
                 <Button
@@ -176,6 +203,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/button_border"
                     android:text="@string/eight"
+                    android:id="@+id/buttonEight"
                     android:textSize="20sp" />
 
                 <Button
@@ -185,6 +213,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/button_border"
                     android:text="@string/nine"
+                    android:id="@+id/buttonNine"
                     android:textSize="20sp" />
 
             </LinearLayout>
@@ -198,6 +227,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:id="@+id/backspace"
                     android:background="@drawable/button_border"
                     android:src="@drawable/ic_backspace_black_18dp" />
 
@@ -208,6 +238,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/button_border"
                     android:text="@string/zero"
+                    android:id="@+id/buttonZero"
                     android:textSize="20sp" />
 
                 <Button
@@ -217,6 +248,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/button_border"
                     android:text="@string/dot"
+                    android:id="@+id/dotButton"
                     android:textSize="20sp" />
 
             </LinearLayout>
@@ -230,6 +262,7 @@
             android:layout_weight="1"
             android:background="@drawable/button_border"
             android:text="@string/equals"
+            android:id="@+id/equalsButton"
             android:textSize="20sp" />
 
     </LinearLayout>
