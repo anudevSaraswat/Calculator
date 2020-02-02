@@ -18,4 +18,5 @@
     <string name="equals">=</string>
     <string name="clear">C</string>
     <string name="dot">.</string>
+    <string name="brackets">()</string>
 </resources>
