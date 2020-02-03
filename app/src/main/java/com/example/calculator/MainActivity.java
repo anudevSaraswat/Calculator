@@ -16,8 +16,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Stack<Character> expressionStack;
     private TextView displayTextView;
     private int count;
-    private int openingBracCount;
-    private int closingBracCount;
+    private int openingBracketCount;
+    private int closingBracketCount;
+    private int digitsAfterDecimal;
+    private boolean decimalStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addButton.setOnClickListener(this);
         subtractButton.setOnClickListener(this);
         //equalsButton.setOnClickListener(this);
-        //dotButton.setOnClickListener(this);
+        dotButton.setOnClickListener(this);
         clearButton.setOnClickListener(this);
         //backspace.setOnClickListener(this);
     }
@@ -125,35 +127,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.bracketButton:
                 numOrOp = insertBracket();
+                if (decimalStarted){
+                    decimalStarted = false;
+                    digitsAfterDecimal = 0;
+                }
 
                 break;
 
             case R.id.modButton:
-                count = 0;
                 numOrOp = "%";
 
                 break;
 
             case R.id.multiplyButton:
-                count = 0;
-                numOrOp = "*";
+                numOrOp = "x";
 
                 break;
 
             case R.id.divideButton:
-                count = 0;
                 numOrOp = "/";
 
                 break;
 
             case R.id.addButton:
-                count = 0;
                 numOrOp = "+";
 
                 break;
 
             case R.id.subtractButton:
-                count = 0;
                 numOrOp = "-";
 
                 break;
@@ -166,53 +167,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 count = 0;
                 displayTextView.setText("");
                 emptyStack();
-                openingBracCount = 0;
-                closingBracCount = 0;
+                openingBracketCount = 0;
+                closingBracketCount = 0;
+                digitsAfterDecimal = 0;
+                decimalStarted = false;
+                numOrOp = null;
 
                 break;
 
             case R.id.dotButton:
-                numOrOp = ".";
+                numOrOp = insertDecimalPoint();
+                if (!decimalStarted)
+                    decimalStarted = true;
 
                 break;
 
             case R.id.backspace:
         }
 
-        if (count == 15)
+        if (numOrOp == null)
+            return;
+
+        if (isOperator(numOrOp.charAt(0))) {
+            if (decimalStarted) {
+                decimalStarted = false;
+                digitsAfterDecimal = 0;
+            }
+            count = 0;
+        }
+
+        if (count == 15) {
             Toast.makeText(this, "Maximum 15 digits allowed!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        else {
-            if (numOrOp.length() > 1) {
-                displayTextView.append(numOrOp);
-                addToStack(numOrOp.charAt(0));
-                addToStack(numOrOp.charAt(1));
-            } else {
-                if (!expressionStack.isEmpty()) {
+        if (digitsAfterDecimal == 10) {
+            Toast.makeText(this, "Maximum 10 digits allowed after decimal point!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                    if (isNumber(numOrOp.charAt(0)) && isNumber(expressionStack.peek()))
-                        count++;
+        if (numOrOp.length() > 1) {
+            displayTextView.append(numOrOp);
+            addToStack(numOrOp.charAt(0));
+            addToStack(numOrOp.charAt(1));
+        } else {
+            if (!expressionStack.isEmpty()) {
 
-                    if (isOperator(numOrOp.charAt(0)) && isOperator(expressionStack.peek()))
+                if (isNumber(numOrOp.charAt(0)) && isNumber(expressionStack.peek()))
+                    count++;
+
+                if (isOperator(numOrOp.charAt(0)) && isOperator(expressionStack.peek()))
+                    return;
+
+                if (isNumber(numOrOp.charAt(0))) {
+
+                    if (expressionStack.peek() == ')') {
+                        displayTextView.append("x" + numOrOp);
+                        addToStack('x');
+                        addToStack(numOrOp.charAt(0));
                         return;
-
-                    if (isNumber(numOrOp.charAt(0))){
-                        if (expressionStack.peek() == ')'){
-                            displayTextView.append("*" + numOrOp);
-                            addToStack('*');
-                            addToStack(numOrOp.charAt(0));
-                            return;
-                        }
                     }
 
-                    displayTextView.append(numOrOp + "");
-                    addToStack(numOrOp.charAt(0));
-
-                } else {
-                    displayTextView.append(numOrOp + "");
-                    addToStack(numOrOp.charAt(0));
-                    count++;
+                    if (decimalStarted)
+                        digitsAfterDecimal++;
                 }
+
+                displayTextView.append(numOrOp + "");
+                addToStack(numOrOp.charAt(0));
+
+            } else {
+                displayTextView.append(numOrOp + "");
+                addToStack(numOrOp.charAt(0));
+                count++;
             }
         }
 
@@ -222,19 +248,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        }
     }
 
+
     void addToStack(char i) {
         expressionStack.push(i);
     }
 
-//    String getExpression() {
-//        StringBuilder builder = new StringBuilder();
-//        for (int i = 0; i < expressionStack.size(); i++)
-//            builder.append(expressionStack.elementAt(i));
-//        return builder.toString();
-//    }
 
     void emptyStack() {
-        expressionStack.empty();
+        expressionStack.clear();
     }
 
     boolean isOperator(char operator) {
@@ -245,10 +266,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case '+':
             case '-':
-            case '*':
+            case 'x':
             case '/':
             case '%':
-            case '.':
                 flag = true;
 
                 break;
@@ -289,54 +309,95 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     String insertBracket() {
 
-        String bracket = null;
+        String bracket = "";
 
         if (expressionStack.isEmpty()) {
             bracket = "(";
-            openingBracCount++;
+            openingBracketCount++;
         } else {
 
             if (expressionStack.contains('(')) {
 
                 if (expressionStack.peek() == '(') {
                     bracket = "(";
-                    openingBracCount++;
+                    openingBracketCount++;
                 } else {
 
                     if (isOperator(expressionStack.peek())) {
                         bracket = "(";
-                        openingBracCount++;
+                        openingBracketCount++;
                     }
 
                     if (expressionStack.peek() == ')') {
-                        if (openingBracCount == closingBracCount) {
-                            bracket = "*(";
-                            openingBracCount++;
+                        if (openingBracketCount == closingBracketCount) {
+                            bracket = "x(";
+                            openingBracketCount++;
                         } else {
                             bracket = ")";
-                            closingBracCount++;
+                            closingBracketCount++;
                         }
                     }
 
                     if (isNumber(expressionStack.peek())) {
-                        if (openingBracCount == closingBracCount) {
-                            bracket = "*(";
-                            openingBracCount++;
+                        if (openingBracketCount == closingBracketCount) {
+                            bracket = "x(";
+                            openingBracketCount++;
                         } else {
                             bracket = ")";
-                            closingBracCount++;
+                            closingBracketCount++;
                         }
                     }
                 }
             } else {
-                bracket = "(";
-                openingBracCount++;
+                if (isNumber(expressionStack.peek())){
+                    bracket = "x(";
+                    openingBracketCount++;
+                }
             }
         }
 
         return bracket;
     }
 
+
+    private String insertDecimalPoint() {
+
+        String point = null;
+
+        if (expressionStack.isEmpty()){
+            point = "0.";
+        }
+        else {
+
+            if (isOperator(expressionStack.peek()))
+                point = "0.";
+
+            if (isNumber(expressionStack.peek()) && !decimalStarted)
+                point = ".";
+
+            if (expressionStack.peek() == '(')
+                point = "0.";
+
+            if (expressionStack.peek() == ')')
+                point = "x0.";
+
+            if (expressionStack.peek() == '.')
+                return point;
+
+            if (isNumber(expressionStack.peek()) && decimalStarted)
+                return point;
+        }
+
+        return point;
+    }
+
+//    String getExpression() {
+//        StringBuilder builder = new StringBuilder();
+//        for (int i = 0; i < expressionStack.size(); i++)
+//            builder.append(expressionStack.elementAt(i));
+//        return builder.toString();
+//    }
+//
 //    void solveExpression() {
 //
 //        Stack<String> numberStack = new Stack<>();
@@ -345,8 +406,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        for (int i = 0; i < expressionStack.size(); i++) {
 //            if (isOperator(expressionStack.get(i)))
 //                operatorStack.push(expressionStack.get(i));
-//            else
-//
 //        }
 //    }
 

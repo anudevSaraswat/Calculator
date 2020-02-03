@@ -12,7 +12,7 @@
     <string name="nine">9</string>
     <string name="add">+</string>
     <string name="sub">-</string>
-    <string name="mul">*</string>
+    <string name="mul">x</string>
     <string name="div">/</string>
     <string name="mod">%</string>
     <string name="equals">=</string>
