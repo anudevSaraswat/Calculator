@@ -3,6 +3,7 @@ package com.example.calculator;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -14,6 +15,7 @@ import java.util.Stack;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Stack<Character> expressionStack;
+    private Stack<String> valueStack;
     private TextView displayTextView;
     private int count;
     private int openingBracketCount;
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         divButton.setOnClickListener(this);
         addButton.setOnClickListener(this);
         subtractButton.setOnClickListener(this);
-        //equalsButton.setOnClickListener(this);
+        equalsButton.setOnClickListener(this);
         dotButton.setOnClickListener(this);
         clearButton.setOnClickListener(this);
         //backspace.setOnClickListener(this);
@@ -126,8 +128,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.bracketButton:
+                if (!expressionStack.isEmpty() && expressionStack.peek() == '.')
+                    return;
                 numOrOp = insertBracket();
-                if (decimalStarted){
+                if (decimalStarted) {
                     decimalStarted = false;
                     digitsAfterDecimal = 0;
                 }
@@ -159,7 +163,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 break;
 
-            case R.id.equalsButton: //Log.e("anudevExpression", getExpression()+"");
+            case R.id.equalsButton:
+
+                numOrOp = null;
+
+                if (getExpression() == null)
+                    Toast.makeText(this, "Invalid expression!", Toast.LENGTH_SHORT).show();
+                else {
+                    Log.e("anudevExpression", getExpression() + "");
+                    solveExpression(getExpression());
+                    numOrOp = valueStack.toString();
+                }
 
                 break;
 
@@ -213,13 +227,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             if (!expressionStack.isEmpty()) {
 
-                if (isNumber(numOrOp.charAt(0)) && isNumber(expressionStack.peek()))
-                    count++;
-
-                if (isOperator(numOrOp.charAt(0)) && isOperator(expressionStack.peek()))
-                    return;
-
                 if (isNumber(numOrOp.charAt(0))) {
+
+                    if (isNumber(expressionStack.peek()))
+                        count++;
 
                     if (expressionStack.peek() == ')') {
                         displayTextView.append("x" + numOrOp);
@@ -232,10 +243,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         digitsAfterDecimal++;
                 }
 
+                if (isOperator(numOrOp.charAt(0))) {
+
+                    if (isOperator(expressionStack.peek()))
+                        return;
+
+                    if (expressionStack.peek() == '.')
+                        return;
+
+                }
+
                 displayTextView.append(numOrOp + "");
                 addToStack(numOrOp.charAt(0));
 
             } else {
+
+                if (isOperator(numOrOp.charAt(0)))
+                    return;
+
                 displayTextView.append(numOrOp + "");
                 addToStack(numOrOp.charAt(0));
                 count++;
@@ -258,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         expressionStack.clear();
     }
 
+
     boolean isOperator(char operator) {
 
         boolean flag;
@@ -279,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return flag;
     }
+
 
     boolean isNumber(char operator) {
 
@@ -306,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return flag;
     }
+
 
     String insertBracket() {
 
@@ -349,8 +377,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             } else {
-                if (isNumber(expressionStack.peek())){
+                if (isNumber(expressionStack.peek())) {
                     bracket = "x(";
+                    openingBracketCount++;
+                }
+
+                if (isOperator(expressionStack.peek())) {
+                    bracket = "(";
                     openingBracketCount++;
                 }
             }
@@ -364,16 +397,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String point = null;
 
-        if (expressionStack.isEmpty()){
+        if (expressionStack.isEmpty()) {
             point = "0.";
-        }
-        else {
+        } else {
 
             if (isOperator(expressionStack.peek()))
                 point = "0.";
 
-            if (isNumber(expressionStack.peek()) && !decimalStarted)
-                point = ".";
+            if (isNumber(expressionStack.peek())) {
+
+                if (!decimalStarted)
+                    point = ".";
+
+                if (decimalStarted)
+                    return point;
+
+            }
 
             if (expressionStack.peek() == '(')
                 point = "0.";
@@ -384,29 +423,161 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (expressionStack.peek() == '.')
                 return point;
 
-            if (isNumber(expressionStack.peek()) && decimalStarted)
-                return point;
         }
 
         return point;
     }
 
-//    String getExpression() {
-//        StringBuilder builder = new StringBuilder();
-//        for (int i = 0; i < expressionStack.size(); i++)
-//            builder.append(expressionStack.elementAt(i));
-//        return builder.toString();
-//    }
-//
-//    void solveExpression() {
-//
-//        Stack<String> numberStack = new Stack<>();
-//        Stack<Character> operatorStack = new Stack<>();
-//
-//        for (int i = 0; i < expressionStack.size(); i++) {
-//            if (isOperator(expressionStack.get(i)))
-//                operatorStack.push(expressionStack.get(i));
-//        }
-//    }
 
+    String getExpression() {
+
+        if (expressionStack.isEmpty() || openingBracketCount != closingBracketCount ||
+                isOperator(expressionStack.peek()) || expressionStack.peek() == '.')
+            return null;
+        else {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < expressionStack.size(); i++)
+                builder.append(expressionStack.elementAt(i));
+            return builder.toString();
+        }
+    }
+
+
+    int getPrecedence(char op) {
+
+        int precedence = 0;
+
+        switch (op) {
+
+            case '+':
+            case '-':
+                precedence = 1;
+
+                break;
+
+            case 'x':
+            case '/':
+            case '%':
+                precedence = 2;
+
+        }
+
+        return precedence;
+
+    }
+
+
+    void solveExpression(String expression) {
+
+        Stack<Character> operatorStack = new Stack<>();
+        valueStack = new Stack<>();
+        StringBuilder builder;
+        int i = 0;
+
+        while (i < expression.length()) {
+
+            builder = new StringBuilder();
+
+            char temp = expression.charAt(i);
+
+            if (isNumber(temp)) {
+
+                builder.append(temp);
+                i++;
+
+                while (i < expression.length()) {
+
+                    temp = expression.charAt(i);
+
+                    if (isNumber(temp) || temp == '.')
+                        builder.append(temp);
+                    else
+                        break;
+                    i++;
+                }
+
+                valueStack.push(builder.toString());
+
+            } else if (isOperator(temp)) {
+
+                if (operatorStack.isEmpty() || operatorStack.peek() == '(') {
+                    operatorStack.push(temp);
+                    i++;
+                } else {
+
+                    int stackElementPrecedence = getPrecedence(operatorStack.peek());
+                    int tempPrecedence = getPrecedence(temp);
+
+                    if (stackElementPrecedence >= tempPrecedence) {
+
+                        valueStack.push(operatorStack.pop() + "");
+                        operatorStack.push(temp);
+                        eval();
+                        i++;
+
+                    } else {
+                        operatorStack.push(temp);
+                        i++;
+                    }
+                }
+
+            } else if (temp == '(') {
+                operatorStack.push(temp);
+                i++;
+            } else {
+                char temp2;
+                while ((temp2 = operatorStack.pop()) != '(') {
+                    valueStack.push(temp2 + "");
+                    eval();
+                }
+                i++;
+            }
+            Log.e("anudevException", operatorStack.toString() + "--" + valueStack.toString());
+        }
+
+        while (!operatorStack.isEmpty()) {
+            Log.e("anudevException", valueStack.toString());
+            valueStack.push(operatorStack.pop() + "");
+            eval();
+        }
+    }
+
+    void eval() {
+
+        String operator = valueStack.pop();
+        double num2 = Double.parseDouble(valueStack.pop());
+        double num1 = Double.parseDouble(valueStack.pop());
+        double result;
+
+        switch (operator) {
+
+            case "+":
+                result = num1 + num2;
+                valueStack.push(result + "");
+
+                break;
+
+            case "-":
+                result = num1 - num2;
+                valueStack.push(result + "");
+
+                break;
+
+            case "/":
+                result = num1 / num2;
+                valueStack.push(result + "");
+
+                break;
+
+            case "x":
+                result = num1 * num2;
+                valueStack.push(result + "");
+
+                break;
+
+            case "%":
+                result = num1 % num2;
+                valueStack.push(result + "");
+        }
+    }
 }
