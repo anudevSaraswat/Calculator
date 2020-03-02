@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         expressionStack = new Stack<>();
+        operatorStack = new Stack<>();
+        valueStack = new Stack<>();
         setContentView(R.layout.activity_main);
         displayTextView = findViewById(R.id.displayTextView);
         Button buttonZero = findViewById(R.id.buttonZero);
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         equalsButton.setOnClickListener(this);
         dotButton.setOnClickListener(this);
         clearButton.setOnClickListener(this);
-        //backspace.setOnClickListener(this);
+        backspace.setOnClickListener(this);
     }
 
     @Override
@@ -209,6 +211,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.backspace:
+                numOrOp = null;
+                backspace();
+
         }
 
         if (numOrOp == null)
@@ -306,6 +311,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         digitsAfterDecimal = 0;
         decimalStarted = false;
 
+    }
+
+    void backspace(){
+
+        if (!expressionStack.isEmpty()) {
+
+            char temp = expressionStack.pop();
+
+            if (temp == ')')
+                --closingBracketCount;
+
+            if (temp == '(')
+                --openingBracketCount;
+
+            if (isNumber(temp) && decimalStarted)
+                --digitsAfterDecimal;
+
+            if (isNumber(temp) && !decimalStarted)
+                --count;
+
+            if (!expressionStack.isEmpty()){
+                for (int i = 0; i < expressionStack.size(); i++){
+                    if (i == 0)
+                        displayTextView.setText(expressionStack.get(i) + "");
+                    else
+                        displayTextView.append(expressionStack.get(i) + "");
+                }
+            }
+            else
+                displayTextView.setText("");
+        }
     }
 
     void addToStack(char i) {
@@ -497,8 +533,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void solveExpression(String expression) {
 
-        operatorStack = new Stack<>();
-        valueStack = new Stack<>();
         StringBuilder builder;
         int i = 0;
 
