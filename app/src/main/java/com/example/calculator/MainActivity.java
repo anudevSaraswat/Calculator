@@ -2,6 +2,7 @@ package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -313,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("SetTextI18n")
     void backspace(){
 
         if (!expressionStack.isEmpty()) {
@@ -594,11 +596,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 i++;
             }
-            Log.e("anudevException", operatorStack.toString() + "--" + valueStack.toString());
         }
 
         while (!operatorStack.isEmpty()) {
-            Log.e("anudevException", valueStack.toString());
             valueStack.push(operatorStack.pop() + "");
             eval();
         }
