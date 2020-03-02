@@ -15,12 +15,14 @@ import java.util.Stack;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Stack<Character> expressionStack;
+    private Stack<Character> operatorStack;
     private Stack<String> valueStack;
     private TextView displayTextView;
     private int count;
     private int openingBracketCount;
     private int closingBracketCount;
     private int digitsAfterDecimal;
+    private boolean equalsPressed = false;
     private boolean decimalStarted = false;
 
     @Override
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+
         String numOrOp = " ";
 
         switch (v.getId()) {
@@ -135,31 +138,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     decimalStarted = false;
                     digitsAfterDecimal = 0;
                 }
+                equalsPressed = false;
 
                 break;
 
             case R.id.modButton:
                 numOrOp = "%";
+                equalsPressed = false;
 
                 break;
 
             case R.id.multiplyButton:
                 numOrOp = "x";
+                equalsPressed = false;
 
                 break;
 
             case R.id.divideButton:
                 numOrOp = "/";
+                equalsPressed = false;
 
                 break;
 
             case R.id.addButton:
                 numOrOp = "+";
+                equalsPressed = false;
 
                 break;
 
             case R.id.subtractButton:
                 numOrOp = "-";
+                equalsPressed = false;
 
                 break;
 
@@ -167,24 +176,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 numOrOp = null;
 
-                if (getExpression() == null)
-                    Toast.makeText(this, "Invalid expression!", Toast.LENGTH_SHORT).show();
-                else {
-                    Log.e("anudevExpression", getExpression() + "");
-                    solveExpression(getExpression());
-                    numOrOp = valueStack.toString();
+                if (!equalsPressed) {
+                    if (getExpression() == null)
+                        Toast.makeText(this, "Invalid expression!", Toast.LENGTH_SHORT).show();
+                    else {
+                        equalsPressed = true;
+                        solveExpression(getExpression());
+                        expressionStack.clear();
+                        String result = valueStack.toString();
+                        int i = 1;
+                        while (i < result.length() - 1)
+                            addToStack(result.charAt(i++));
+                        displayTextView.setText(result);
+                        clear(1);
+                    }
                 }
 
                 break;
 
             case R.id.clearButton:
-                count = 0;
                 displayTextView.setText("");
-                emptyStack();
-                openingBracketCount = 0;
-                closingBracketCount = 0;
-                digitsAfterDecimal = 0;
-                decimalStarted = false;
+                clear(2);
                 numOrOp = null;
 
                 break;
@@ -228,6 +240,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (!expressionStack.isEmpty()) {
 
                 if (isNumber(numOrOp.charAt(0))) {
+
+                    if (equalsPressed){
+                        displayTextView.setText(numOrOp);
+                        expressionStack.clear();
+                        addToStack(numOrOp.charAt(0));
+                        equalsPressed = false;
+                        return;
+                    }
 
                     if (isNumber(expressionStack.peek()))
                         count++;
@@ -274,15 +294,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    void clear(int i){
+
+        if (i == 2)
+            expressionStack.clear();
+        operatorStack.clear();
+        valueStack.clear();
+        count = 0;
+        openingBracketCount = 0;
+        closingBracketCount = 0;
+        digitsAfterDecimal = 0;
+        decimalStarted = false;
+
+    }
+
     void addToStack(char i) {
         expressionStack.push(i);
     }
-
-
-    void emptyStack() {
-        expressionStack.clear();
-    }
-
 
     boolean isOperator(char operator) {
 
@@ -469,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void solveExpression(String expression) {
 
-        Stack<Character> operatorStack = new Stack<>();
+        operatorStack = new Stack<>();
         valueStack = new Stack<>();
         StringBuilder builder;
         int i = 0;
